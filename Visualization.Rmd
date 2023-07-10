@@ -1,0 +1,138 @@
+---
+title: "Visualization"
+author: "Pulak Jain 20BRS1126"
+date: "2023-02-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tm)
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
+library("syuzhet")
+library("ggplot2")
+library(corpus)
+
+```
+
+
+```{r}
+dtm_d=read.csv("D:\\EDA_Tweets\\frequency.csv")
+text=read.csv("D:\\EDA_Tweets\\Revised_sentiment_tweets_1.6M.csv")
+```
+
+
+```{r}
+tail(text,100)
+```
+
+
+```{r}
+names=(text$Username)
+labels=unique(names)
+paste("Number of unique Users: ",length(labels))
+cat("\n")
+noquote(labels)
+
+```
+
+
+#Pie chart for finding tweet's years
+
+```{r}
+years=substring(text$Timestamp,24,28)
+labels=unique(years)
+pie(table(as.numeric(years)),main = "Pie chart for finding tweet's years", col = rainbow(length(labels)),labels)
+```
+
+#Tweets tweeted in different Months
+
+```{r}
+months=substring(text$Timestamp,5,7)
+ggplot(data.frame(months), aes(x = months,fill=months)) + geom_bar() + ggtitle("Tweets tweeted in different Months")
+
+```
+
+
+
+# Top 10 words used
+
+```{r}
+barplot(dtm_d[1:10,]$freq, las = 2, names.arg = dtm_d[1:10,]$word,col ="purple", main ="Top 10 most frequent words", ylab = "Word frequencies")
+```
+
+
+#generate word cloud
+
+```{r}
+set.seed(1234)
+wordcloud(words = dtm_d$word, freq = dtm_d$freq, min.freq = 10000,max.words=100, random.order=FALSE, rot.per=0.40, colors=brewer.pal(8, "Dark2"))
+```
+
+
+
+
+
+```{r}
+install.packages("tidyverse")
+install.packages("reshape2")
+install.packages("ggplot2")
+install.packages("ggridges")
+install.packages("lubridate")
+install.packages("rtweet")
+install.packages("maps")
+install.packages("quanteda")
+library(tidyverse)
+library(reshape2)
+library(ggplot2)
+library(ggridges)
+library(lubridate)
+library(rtweet)
+library(maps)
+library(quanteda)
+
+```
+
+
+```{r}
+tkn <- tokens(text$Tweets,
+              remove_twitter = T,
+              remove_separators = T,
+              remove_symbols = T,
+              remove_punct = T,
+              remove_url = T,
+              remove_hyphens = T,
+              remove_numbers = T) %>% 
+      tokens_ngrams(n = 1:2)
+
+gotDfm <- dfm_remove(tkn, tolower = T,
+              remove = stopwords("english"))
+
+gotChars <- c("jon", "cersei", "sansa", "arya",
+              "bran", "tyrion", "jaime", "daenerys",
+              "hound", "davos", "missandei", "theon",
+              "brienne", "gendry", "grey_worm", "jorah",
+              "night_king", "varys", "melisandre", "tormund")
+
+gotFcm <- dfm_select(gotDfm, pattern = gotChars) %>% 
+      fcm()
+
+set.seed(100)
+textplot_network(gotFcm, min_freq = 0.1,
+                 edge_alpha = .25,
+                 edge_size = 5)
+```
+
+
+
+```{r}
+# Find associations for words that occur at least 50 times
+findAssocs(dtm_d$word, terms =dtm_d[1:10,]$word, corlimit = 0.6)
+```
+
